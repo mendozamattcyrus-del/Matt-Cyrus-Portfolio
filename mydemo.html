@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>C++ Demo Learning System</title>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/jetbrains-mono@5.0.0/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fontsource/share-tech-mono@5.0.0/index.css">
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --phosphor: #00ff41;
+    --phosphor-dim: #00b828;
+    --phosphor-dark: #004d11;
+    --amber: #ffb000;
+    --amber-dim: #b87a00;
+    --red: #ff3860;
+    --bg: #0a0a0a;
+    --panel: #0d0d0d;
+    --panel-light: #141414;
+    --border: #1f1f1f;
+    --text: #b8ffb8;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'Share Tech Mono', 'Courier New', monospace;
+    overflow-x: hidden;
+}
+
+/* CRT scanline overlay */
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 0, 0, 0) 2px,
+        rgba(0, 0, 0, 0.15) 3px,
+        rgba(0, 0, 0, 0.15) 3px
+    );
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: multiply;
+}
+
+/* CRT vignette */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 40%,
+        rgba(0, 0, 0, 0.6) 100%
+    );
+    pointer-events: none;
+    z-index: 9998;
+}
+
+/* =========================
+   HEADER - ASCII TERMINAL
+========================= */
+
+header {
+    padding: 30px 20px 20px;
+    text-align: center;
+    border-bottom: 1px solid var(--phosphor-dark);
+    background:
+        linear-gradient(180deg, rgba(0, 255, 65, 0.04) 0%, transparent 100%),
+        var(--bg);
+    position: relative;
+}
+
+.ascii-logo {
+    color: var(--phosphor);
+    font-size: 11px;
+    line-height: 1.1;
+    letter-spacing: 1px;
+    white-space: pre;
+    display: inline-block;
+    text-shadow: 0 0 8px var(--phosphor), 0 0 2px var(--phosphor);
+    margin-bottom: 10px;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+header h1 {
+    margin: 15px 0 5px;
+    font-size: 22px;
+    color: var(--phosphor);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px var(--phosphor);
+    font-weight: 400;
+}
+
+header h1::before { content: "> "; color: var(--amber); }
+header h1::after {
+    content: "_";
+    animation: blink 1s step-end infinite;
+    color: var(--phosphor);
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+header p {
+    margin: 8px 0 0;
+    color: var(--phosphor-dim);
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+header p::before { content: "// "; color: var(--amber); }
+
+.status-bar {
+    margin-top: 15px;
+    font-size: 11px;
+    color: var(--phosphor-dim);
+    letter-spacing: 1px;
+}
+
+.status-bar span {
+    color: var(--phosphor);
+    margin: 0 8px;
+}
+
+.status-bar .dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--phosphor);
+    box-shadow: 0 0 6px var(--phosphor);
+    margin-right: 6px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+/* =========================
+   MAIN CONTAINER
+========================= */
+
+.container {
+    display: grid;
+    grid-template-columns: 260px 1fr 320px;
+    gap: 16px;
+    max-width: 1500px;
+    margin: auto;
+    padding: 16px;
+}
+
+/* =========================
+   TERMINAL WINDOW BASE
+========================= */
+
+.terminal-window {
+    background: var(--panel);
+    border: 1px solid var(--phosphor-dark);
+    border-radius: 4px;
+    box-shadow:
+        0 0 0 1px rgba(0, 255, 65, 0.1),
+        0 10px 40px rgba(0, 255, 65, 0.05),
+        inset 0 0 40px rgba(0, 255, 65, 0.02);
+    overflow: hidden;
+}
+
+.title-bar {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--panel-light);
+    border-bottom: 1px solid var(--phosphor-dark);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--phosphor-dim);
+    text-transform: uppercase;
+}
+
+.title-bar .dots {
+    display: flex;
+    gap: 6px;
+    margin-right: 12px;
+}
+
+.title-bar .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+}
+
+.dot.red { background: #ff5f56; }
+.dot.yellow { background: #ffbd2e; }
+.dot.green { background: #27c93f; }
+
+.title-bar .title {
+    flex: 1;
+    text-align: center;
+}
+
+.title-bar .title::before { content: "~/"; color: var(--amber); }
+
+/* =========================
+   DEMO MENU
+========================= */
+
+.demos h3 {
+    padding: 12px;
+    margin: 0;
+    color: var(--amber);
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-align: center;
+    border-bottom: 1px dashed var(--phosphor-dark);
+    text-transform: uppercase;
+}
+
+.demos-list {
+    padding: 10px;
+}
+
+.demo-btn {
+    display: block;
+    width: 100%;
+    padding: 10px 12px;
+    margin-bottom: 4px;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    cursor: pointer;
+    transition: all .15s;
+    font-family: inherit;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    position: relative;
+}
+
+.demo-btn::before {
+    content: "[ ] ";
+    color: var(--phosphor-dim);
+}
+
+.demo-btn:hover {
+    background: rgba(0, 255, 65, 0.05);
+    color: var(--phosphor);
+    padding-left: 18px;
+}
+
+.demo-btn:hover::before {
+    content: "[>] ";
+    color: var(--phosphor);
+}
+
+.demo-btn.active {
+    background: rgba(0, 255, 65, 0.1);
+    border-color: var(--phosphor);
+    color: var(--phosphor);
+    text-shadow: 0 0 6px var(--phosphor);
+}
+
+.demo-btn.active::before {
+    content: "[*] ";
+    color: var(--amber);
+}
+
+/* =========================
+   EDITOR
+========================= */
+
+.editor-title {
+    padding: 10px 14px;
+    background: var(--panel-light);
+    color: var(--phosphor);
+    font-weight: 400;
+    border-bottom: 1px solid var(--phosphor-dark);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.editor-title::before {
+    content: "$ cat ";
+    color: var(--amber);
+}
+
+#code {
+    width: 100%;
+    min-height: 430px;
+    resize: vertical;
+    border: none;
+    outline: none;
+    padding: 18px;
+    background: #000;
+    color: var(--phosphor);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    text-shadow: 0 0 2px rgba(0, 255, 65, 0.4);
+    caret-color: var(--phosphor);
+}
+
+#code::selection {
+    background: var(--phosphor);
+    color: #000;
+}
+
+/* =========================
+   INPUT
+========================= */
+
+.input-area {
+    padding: 14px 18px;
+    background: var(--panel-light);
+    border-top: 1px solid var(--phosphor-dark);
+}
+
+.input-area label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--amber);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.input-area label::before { content: "INPUT> "; color: var(--phosphor); }
+
+#userInput {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 2px;
+    border: 1px solid var(--phosphor-dark);
+    outline: none;
+    background: #000;
+    color: var(--phosphor);
+    font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 1px;
+    transition: .2s;
+}
+
+#userInput:focus {
+    border-color: var(--phosphor);
+    box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    padding: 14px 18px;
+    background: var(--panel);
+    border-top: 1px solid var(--phosphor-dark);
+}
+
+.buttons button {
+    flex: 1;
+    padding: 11px 18px;
+    border: 1px solid;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    transition: all .2s;
+    position: relative;
+}
+
+.run {
+    color: var(--phosphor);
+    border-color: var(--phosphor);
+}
+
+.run::before { content: "[ "; color: var(--amber); }
+.run::after { content: " ]"; color: var(--amber); }
+
+.run:hover {
+    background: var(--phosphor);
+    color: #000;
+    box-shadow: 0 0 20px var(--phosphor);
+    text-shadow: none;
+}
+
+.clear {
+    color: var(--red);
+    border-color: var(--red);
+}
+
+.clear::before { content: "[ "; color: var(--amber); }
+.clear::after { content: " ]"; color: var(--amber); }
+
+.clear:hover {
+    background: var(--red);
+    color: #000;
+    box-shadow: 0 0 20px var(--red);
+}
+
+/* =========================
+   OUTPUT
+========================= */
+
+.output-box {
+    margin: 16px 18px 18px;
+    border: 1px solid var(--phosphor-dark);
+    border-radius: 2px;
+    overflow: hidden;
+    background: #000;
+}
+
+.output-title {
+    padding: 8px 12px;
+    background: var(--panel-light);
+    color: var(--amber);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--phosphor-dark);
+}
+
+.output-title::before { content: "STDOUT ─ "; color: var(--phosphor); }
+
+#output {
+    min-height: 150px;
+    padding: 14px;
+    background: #000;
+    color: var(--phosphor);
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.6;
+    text-shadow: 0 0 3px rgba(0, 255, 65, 0.5);
+}
+
+#output::before {
+    content: "user@cpp:~$ ";
+    color: var(--amber);
+}
+
+/* =========================
+   INFORMATION
+========================= */
+
+.info {
+    padding: 0;
+}
+
+.info h2 {
+    margin: 0;
+    padding: 12px 16px;
+    color: var(--phosphor);
+    font-size: 14px;
+    font-weight: 400;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--phosphor-dark);
+    background: var(--panel-light);
+}
+
+.info h2::before { content: "MAN "; color: var(--amber); }
+
+#explanation {
+    padding: 16px;
+    line-height: 1.6;
+    font-size: 13px;
+}
+
+#explanation h3 {
+    margin: 0 0 12px;
+    color: var(--amber);
+    font-size: 14px;
+    letter-spacing: 1px;
+    border-bottom: 1px dashed var(--phosphor-dark);
+    padding-bottom: 8px;
+}
+
+#explanation h3::before { content: "## "; color: var(--phosphor); }
+
+#explanation p {
+    margin: 0 0 12px;
+    color: var(--text);
+}
+
+.variable {
+    margin: 10px 0;
+    padding: 10px 12px;
+    background: rgba(0, 255, 65, 0.03);
+    border-left: 2px solid var(--phosphor);
+    border-radius: 0;
+    font-size: 12px;
+}
+
+.variable strong {
+    color: var(--amber);
+    font-weight: 400;
+    letter-spacing: 1px;
+}
+
+.variable strong::before { content: "var "; color: var(--phosphor); }
+
+.variable p {
+    margin: 4px 0 0;
+    color: var(--text);
+}
+
+.type {
+    color: var(--phosphor);
+    font-family: inherit;
+    padding: 1px 6px;
+    background: rgba(0, 255, 65, 0.08);
+    border: 1px solid var(--phosphor-dark);
+    border-radius: 2px;
+    font-size: 11px;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--phosphor-dim);
+    font-size: 11px;
+    letter-spacing: 2px;
+    border-top: 1px solid var(--phosphor-dark);
+    margin-top: 20px;
+}
+
+footer::before { content: "── "; color: var(--amber); }
+footer::after { content: " ──"; color: var(--amber); }
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 1100px) {
+    .container {
+        grid-template-columns: 220px 1fr;
+    }
+
+    .info {
+        grid-column: 1 / -1;
+    }
+
+    .ascii-logo {
+        font-size: 8px;
+    }
+}
+
+@media (max-width: 750px) {
+    .container {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+
+    .info {
+        grid-column: auto;
+    }
+
+    header h1 {
+        font-size: 16px;
+        letter-spacing: 2px;
+    }
+
+    .ascii-logo {
+        font-size: 6px;
+    }
+
+    #code {
+        min-height: 300px;
+        font-size: 12px;
+    }
+
+    .buttons {
+        flex-direction: column;
+    }
+
+    .status-bar {
+        display: none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <pre class="ascii-logo">
+
+    </pre>
+    <h1>DEMO LEARNING SYSTEM</h1>
+    <p>Interactive C++ examples with realtime output and variable explanations</p>
+    <div class="status-bar">
+        <span class="dot"></span>SYSTEM ONLINE
+        <span>|</span>
+        <span>SESSION: #0x7F3A</span>
+        <span>|</span>
+        <span>MODE: INTERACTIVE</span>
+    </div>
+</header>
+
+
+<div class="container">
+
+<!-- =========================
+     DEMO MENU
+========================= -->
+
+<aside class="demos terminal-window">
+    <div class="title-bar">
+        <div class="dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+        </div>
+        <div class="title">demos.sh</div>
+    </div>
+
+    <h3>≡ Select Demo</h3>
+
+    <div class="demos-list">
+        <button class="demo-btn" onclick="loadDemo(0)">01. Factorial</button>
+        <button class="demo-btn" onclick="loadDemo(1)">02. Reverse Number</button>
+        <button class="demo-btn" onclick="loadDemo(2)">03. Switch Case</button>
+        <button class="demo-btn" onclick="loadDemo(3)">04. Grade</button>
+        <button class="demo-btn" onclick="loadDemo(4)">05. Sorting</button>
+        <button class="demo-btn" onclick="loadDemo(5)">06. Array</button>
+        <button class="demo-btn" onclick="loadDemo(6)">07. Square Array</button>
+        <button class="demo-btn" onclick="loadDemo(7)">08. String</button>
+        <button class="demo-btn" onclick="loadDemo(8)">09. Enter Grade</button>
+        <button class="demo-btn" onclick="loadDemo(9)">10. Float</button>
+    </div>
+</aside>
+
+
+<!-- =========================
+     EDITOR
+========================= -->
+
+<main class="editor terminal-window">
+    <div class="title-bar">
+        <div class="dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+        </div>
+        <div class="title">main.cpp — vim</div>
+    </div>
+
+    <textarea id="code" spellcheck="false"></textarea>
+
+    <div class="input-area">
+        <label for="userInput">Demo Input</label>
+        <input
+            type="text"
+            id="userInput"
+            value="5"
+            placeholder="enter input..."
+        >
+    </div>
+
+    <div class="buttons">
+        <button class="run" onclick="runCode()">▶ Execute</button>
+        <button class="clear" onclick="clearOutput()">✕ Clear</button>
+    </div>
+
+    <div class="output-box">
+        <div class="output-title">Console Output</div>
+        <div id="output">Select a demo and click Execute.</div>
+    </div>
+</main>
+
+
+<!-- =========================
+     EXPLANATION
+========================= -->
+
+<aside class="info terminal-window">
+    <div class="title-bar">
+        <div class="dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+        </div>
+        <div class="title">man cpp</div>
+    </div>
+
+    <h2 id="infoTitle">C++ Explanation</h2>
+
+    <div id="explanation">
+        Select a demo to see its explanation.
+    </div>
+</aside>
+
+</div>
+
+<footer>
+    C++ DEMO SYSTEM v1.0 · PRESS Ctrl+Enter TO EXECUTE · ESC TO CLEAR
+</footer>
+
+
+<script>
+
+/* =====================================================
+   DEMO DATA
+===================================================== */
+
+const demos = [
+
+{
+    title: "Function to Compute Factorial",
+    code:
+`#include <iostream>
+using namespace std;
+
+unsigned long long factorial(int n)
+{
+    if (n < 0)
+    {
+        cout << "Factorial is not defined for negative numbers.";
+        return 0;
+    }
+
+    unsigned long long result = 1;
+
+    for (int i = 2; i <= n; i++)
+    {
+        result *= i;
+    }
+
+    return result;
+}
+
+int main()
+{
+    int n;
+
+    cout << "Input n: ";
+    cin >> n;
+
+    unsigned long long result = factorial(n);
+
+    if (n >= 0)
+    {
+        cout << "Factorial = " << result << endl;
+    }
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Factorial Function</h3>
+
+<p>
+This program uses a function to calculate
+the factorial of a non-negative integer.
+</p>
+
+<div class="variable">
+<strong>n</strong>
+<p>
+<span class="type">int</span> —
+Stores the number entered by the user.
+</p>
+</div>
+
+<div class="variable">
+<strong>result</strong>
+<p>
+<span class="type">unsigned long long</span> —
+Stores the calculated factorial.
+</p>
+</div>
+
+<div class="variable">
+<strong>i</strong>
+<p>
+<span class="type">int</span> —
+Loop counter used to calculate the factorial.
+</p>
+</div>
+
+<div class="variable">
+<strong>factorial()</strong>
+<p>
+A function that receives n and returns
+the factorial result.
+</p>
+</div>
+`
+},
+
+{
+    title: "Reverse Number",
+    code:
+`#include <iostream>
+using namespace std;
+
+int main()
+{
+    int number;
+    int reverse = 0;
+    int remainder;
+
+    cout << "Enter a number: ";
+    cin >> number;
+
+    while (number != 0)
+    {
+        remainder = number % 10;
+
+        reverse = reverse * 10 + remainder;
+
+        number = number / 10;
+    }
+
+    cout << "Reverse number: "
+         << reverse << endl;
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Reverse Number</h3>
+
+<p>
+This program reverses the digits of an integer.
+For example, 12345 becomes 54321.
+</p>
+
+<div class="variable">
+<strong>number</strong>
+<p>
+<span class="type">int</span> —
+Stores the original number.
+</p>
+</div>
+
+<div class="variable">
+<strong>reverse</strong>
+<p>
+<span class="type">int</span> —
+Builds the reversed number.
+</p>
+</div>
+
+<div class="variable">
+<strong>remainder</strong>
+<p>
+<span class="type">int</span> —
+Stores the last digit using % 10.
+</p>
+</div>
+`
+},
+
+{
+    title: "Switch Case",
+    code:
+`#include <iostream>
+using namespace std;
+
+int main()
+{
+    int choice;
+
+    cout << "Enter 1, 2, or 3: ";
+    cin >> choice;
+
+    switch (choice)
+    {
+        case 1:
+            cout << "You selected ONE.";
+            break;
+
+        case 2:
+            cout << "You selected TWO.";
+            break;
+
+        case 3:
+            cout << "You selected THREE.";
+            break;
+
+        default:
+            cout << "Invalid choice.";
+    }
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Switch Case</h3>
+
+<p>
+The switch statement allows a program to
+choose an action based on a value.
+</p>
+
+<div class="variable">
+<strong>choice</strong>
+<p>
+<span class="type">int</span> —
+Stores the user's selection.
+</p>
+</div>
+
+<div class="variable">
+<strong>case</strong>
+<p>
+Represents a possible value of choice.
+</p>
+</div>
+
+<div class="variable">
+<strong>break</strong>
+<p>
+Stops execution from continuing into
+the next case.
+</p>
+</div>
+
+<div class="variable">
+<strong>default</strong>
+<p>
+Runs when no case matches.
+</p>
+</div>
+`
+},
+
+{
+    title: "Grade",
+    code:
+`#include <iostream>
+using namespace std;
+
+int main()
+{
+    int score;
+
+    cout << "Enter score: ";
+    cin >> score;
+
+    if (score >= 90)
+    {
+        cout << "Grade: A";
+    }
+    else if (score >= 80)
+    {
+        cout << "Grade: B";
+    }
+    else if (score >= 70)
+    {
+        cout << "Grade: C";
+    }
+    else if (score >= 60)
+    {
+        cout << "Grade: D";
+    }
+    else
+    {
+        cout << "Grade: F";
+    }
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Grade Program</h3>
+
+<p>
+The program converts a numerical score
+into a letter grade.
+</p>
+
+<div class="variable">
+<strong>score</strong>
+<p>
+<span class="type">int</span> —
+Stores the student's score.
+</p>
+</div>
+
+<div class="variable">
+<strong>if</strong>
+<p>
+Tests the first condition.
+</p>
+</div>
+
+<div class="variable">
+<strong>else if</strong>
+<p>
+Tests another condition if the previous
+condition was false.
+</p>
+</div>
+
+<div class="variable">
+<strong>else</strong>
+<p>
+Runs when all conditions are false.
+</p>
+</div>
+`
+},
+
+{
+    title: "Sorting",
+    code:
+`#include <iostream>
+using namespace std;
+
+int main()
+{
+    int numbers[5] = {5, 2, 8, 1, 3};
+    int temp;
+
+    for (int i = 0; i < 5; i++)
+    {
+        for (int j = i + 1; j < 5; j++)
+        {
+            if (numbers[i] > numbers[j])
+            {
+                temp = numbers[i];
+
+                numbers[i] = numbers[j];
+
+                numbers[j] = temp;
+            }
+        }
+    }
+
+    cout << "Sorted numbers: ";
+
+    for (int i = 0; i < 5; i++)
+    {
+        cout << numbers[i] << " ";
+    }
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Sorting</h3>
+
+<p>
+This program sorts five numbers from
+smallest to largest.
+</p>
+
+<div class="variable">
+<strong>numbers</strong>
+<p>
+<span class="type">int[5]</span> —
+Stores five integers.
+</p>
+</div>
+
+<div class="variable">
+<strong>temp</strong>
+<p>
+<span class="type">int</span> —
+Temporary variable used during swapping.
+</p>
+</div>
+
+<div class="variable">
+<strong>i</strong>
+<p>
+<span class="type">int</span> —
+Controls the outer loop.
+</p>
+</div>
+
+<div class="variable">
+<strong>j</strong>
+<p>
+<span class="type">int</span> —
+Controls the inner loop.
+</p>
+</div>
+`
+},
+
+{
+    title: "Array",
+    code:
+`#include <iostream>
+using namespace std;
+
+int main()
+{
+    int numbers[5] =
+    {
+        10, 20, 30, 40, 50
+    };
+
+    cout << "Array values:" << endl;
+
+    for (int i = 0; i < 5; i++)
+    {
+        cout << numbers[i] << endl;
+    }
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Array</h3>
+
+<p>
+An array allows multiple values of the
+same type to be stored under one name.
+</p>
+
+<div class="variable">
+<strong>numbers</strong>
+<p>
+<span class="type">int[5]</span> —
+Contains five integer values.
+</p>
+</div>
+
+<div class="variable">
+<strong>i</strong>
+<p>
+<span class="type">int</span> —
+Used as the array index.
+</p>
+</div>
+
+<div class="variable">
+<strong>numbers[0]</strong>
+<p>
+The first element is 10.
+</p>
+</div>
+
+<div class="variable">
+<strong>numbers[4]</strong>
+<p>
+The last element is 50.
+</p>
+</div>
+`
+},
+
+{
+    title: "Square Array",
+    code:
+`#include <iostream>
+using namespace std;
+
+int main()
+{
+    int numbers[5] =
+    {
+        1, 2, 3, 4, 5
+    };
+
+    int square;
+
+    for (int i = 0; i < 5; i++)
+    {
+        square = numbers[i] * numbers[i];
+
+        cout << square << endl;
+    }
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Square Array</h3>
+
+<p>
+This program calculates the square of
+each number in an array.
+</p>
+
+<div class="variable">
+<strong>numbers</strong>
+<p>
+<span class="type">int[5]</span> —
+Contains 1, 2, 3, 4, and 5.
+</p>
+</div>
+
+<div class="variable">
+<strong>square</strong>
+<p>
+<span class="type">int</span> —
+Stores the current squared value.
+</p>
+</div>
+
+<div class="variable">
+<strong>i</strong>
+<p>
+<span class="type">int</span> —
+Array index and loop counter.
+</p>
+</div>
+`
+},
+
+{
+    title: "String",
+    code:
+`#include <iostream>
+#include <string>
+using namespace std;
+
+int main()
+{
+    string name;
+
+    cout << "Enter your name: ";
+    cin >> name;
+
+    cout << "Hello, "
+         << name << "!";
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>String</h3>
+
+<p>
+This program accepts text and displays
+a greeting.
+</p>
+
+<div class="variable">
+<strong>name</strong>
+<p>
+<span class="type">string</span> —
+Stores the user's name.
+</p>
+</div>
+
+<div class="variable">
+<strong>string</strong>
+<p>
+A C++ type used to store text.
+</p>
+</div>
+
+<div class="variable">
+<strong>cin</strong>
+<p>
+Reads input from the user.
+</p>
+</div>
+
+<div class="variable">
+<strong>cout</strong>
+<p>
+Displays output.
+</p>
+</div>
+`
+},
+
+{
+    title: "Enter Grade",
+    code:
+`#include <iostream>
+using namespace std;
+
+int main()
+{
+    char grade;
+
+    cout << "Enter grade: ";
+    cin >> grade;
+
+    switch (grade)
+    {
+        case 'A':
+        case 'a':
+            cout << "Excellent!";
+            break;
+
+        case 'B':
+        case 'b':
+            cout << "Very Good!";
+            break;
+
+        case 'C':
+        case 'c':
+            cout << "Good!";
+            break;
+
+        case 'D':
+        case 'd':
+            cout << "Needs Improvement.";
+            break;
+
+        case 'F':
+        case 'f':
+            cout << "Failed.";
+            break;
+
+        default:
+            cout << "Invalid grade.";
+    }
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Enter Grade</h3>
+
+<p>
+This program accepts a letter grade and
+displays an appropriate message.
+</p>
+
+<div class="variable">
+<strong>grade</strong>
+<p>
+<span class="type">char</span> —
+Stores one character.
+</p>
+</div>
+
+<div class="variable">
+<strong>case</strong>
+<p>
+Checks whether grade matches a particular
+character.
+</p>
+</div>
+
+<div class="variable">
+<strong>default</strong>
+<p>
+Runs if the grade is not A, B, C, D, or F.
+</p>
+</div>
+`
+},
+
+{
+    title: "Float",
+    code:
+`#include <iostream>
+using namespace std;
+
+int main()
+{
+    float price = 99.50f;
+    float quantity = 3.0f;
+    float total;
+
+    total = price * quantity;
+
+    cout << "Price: "
+         << price << endl;
+
+    cout << "Quantity: "
+         << quantity << endl;
+
+    cout << "Total: "
+         << total << endl;
+
+    return 0;
+}`,
+    explanation:
+`
+<h3>Float</h3>
+
+<p>
+This program demonstrates the use of the
+float data type for decimal numbers.
+</p>
+
+<div class="variable">
+<strong>price</strong>
+<p>
+<span class="type">float</span> —
+Stores the price of one item.
+</p>
+</div>
+
+<div class="variable">
+<strong>quantity</strong>
+<p>
+<span class="type">float</span> —
+Stores the number of items.
+</p>
+</div>
+
+<div class="variable">
+<strong>total</strong>
+<p>
+<span class="type">float</span> —
+Stores price multiplied by quantity.
+</p>
+</div>
+`
+}
+
+];
+
+
+let currentDemo = 0;
+
+
+function loadDemo(index)
+{
+    currentDemo = index;
+
+    const demo = demos[index];
+
+    document.getElementById("code").value = demo.code;
+    document.getElementById("infoTitle").textContent = demo.title;
+    document.getElementById("explanation").innerHTML = demo.explanation;
+    document.getElementById("output").textContent = "Click [▶ Execute] to start.";
+
+    const buttons = document.querySelectorAll(".demo-btn");
+    buttons.forEach(function(button) {
+        button.classList.remove("active");
+    });
+    buttons[index].classList.add("active");
+
+    const input = document.getElementById("userInput");
+
+    if (index === 0) input.value = "5";
+    else if (index === 1) input.value = "12345";
+    else if (index === 2) input.value = "2";
+    else if (index === 3) input.value = "85";
+    else if (index === 8) input.value = "A";
+    else if (index === 7) input.value = "Student";
+    else input.value = "";
+}
+
+
+function runCode()
+{
+    const output = document.getElementById("output");
+    const input = document.getElementById("userInput").value.trim();
+
+    output.textContent = "[ COMPILING... ]";
+
+    setTimeout(function()
+    {
+        output.textContent = "";
+        runDemo(currentDemo, input);
+    }, 600);
+}
+
+
+function runDemo(index, input)
+{
+    if (index === 0)
+    {
+        let n = parseInt(input);
+        if (isNaN(n)) n = 5;
+
+        if (n < 0)
+        {
+            realtimeOutput([
+                "Input n: " + n,
+                "Factorial is not defined for negative numbers."
+            ]);
+            return;
+        }
+
+        let result = 1;
+        for (let i = 2; i <= n; i++) result *= i;
+
+        realtimeOutput([
+            "Input n: " + n,
+            "Factorial = " + result
+        ]);
+        return;
+    }
+
+    if (index === 1)
+    {
+        let number = parseInt(input);
+        if (isNaN(number)) number = 12345;
+
+        const original = number;
+        let reverse = 0;
+
+        while (number !== 0)
+        {
+            let remainder = number % 10;
+            reverse = reverse * 10 + remainder;
+            number = Math.trunc(number / 10);
+        }
+
+        realtimeOutput([
+            "Enter a number: " + original,
+            "Reverse number: " + reverse
+        ]);
+        return;
+    }
+
+    if (index === 2)
+    {
+        let choice = parseInt(input);
+        if (isNaN(choice)) choice = 1;
+
+        let message;
+        switch (choice)
+        {
+            case 1: message = "You selected ONE."; break;
+            case 2: message = "You selected TWO."; break;
+            case 3: message = "You selected THREE."; break;
+            default: message = "Invalid choice.";
+        }
+
+        realtimeOutput([
+            "Enter a number from 1 to 3: " + choice,
+            message
+        ]);
+        return;
+    }
+
+    if (index === 3)
+    {
+        let score = parseInt(input);
+        if (isNaN(score)) score = 85;
+
+        let grade;
+        if (score >= 90) grade = "A";
+        else if (score >= 80) grade = "B";
+        else if (score >= 70) grade = "C";
+        else if (score >= 60) grade = "D";
+        else grade = "F";
+
+        realtimeOutput([
+            "Enter score: " + score,
+            "Grade: " + grade
+        ]);
+        return;
+    }
+
+    if (index === 4)
+    {
+        let numbers = [5, 2, 8, 1, 3];
+        const original = numbers.join(" ");
+        numbers.sort(function(a, b) { return a - b; });
+
+        realtimeOutput([
+            "Original numbers: " + original,
+            "Sorted numbers: " + numbers.join(" ")
+        ]);
+        return;
+    }
+
+    if (index === 5)
+    {
+        let numbers = [10, 20, 30, 40, 50];
+        let lines = ["Array values:"];
+        numbers.forEach(function(number) {
+            lines.push(String(number));
+        });
+        realtimeOutput(lines);
+        return;
+    }
+
+    if (index === 6)
+    {
+        let numbers = [1, 2, 3, 4, 5];
+        let lines = ["Square values:"];
+        numbers.forEach(function(number) {
+            let square = number * number;
+            lines.push(number + "² = " + square);
+        });
+        realtimeOutput(lines);
+        return;
+    }
+
+    if (index === 7)
+    {
+        let name = input;
+        if (name === "") name = "Student";
+
+        realtimeOutput([
+            "Enter your name: " + name,
+            "Hello, " + name + "!"
+        ]);
+        return;
+    }
+
+    if (index === 8)
+    {
+        let grade = input.toUpperCase();
+        if (grade === "") grade = "A";
+
+        let message;
+        switch (grade)
+        {
+            case "A": message = "Excellent!"; break;
+            case "B": message = "Very Good!"; break;
+            case "C": message = "Good!"; break;
+            case "D": message = "Needs Improvement."; break;
+            case "F": message = "Failed."; break;
+            default: message = "Invalid grade.";
+        }
+
+        realtimeOutput([
+            "Enter grade: " + grade,
+            message
+        ]);
+        return;
+    }
+
+    if (index === 9)
+    {
+        const price = 99.50;
+        const quantity = 3.0;
+        const total = price * quantity;
+
+        realtimeOutput([
+            "Price: " + price.toFixed(2),
+            "Quantity: " + quantity.toFixed(1),
+            "Total: " + total.toFixed(2)
+        ]);
+        return;
+    }
+}
+
+
+function realtimeOutput(lines)
+{
+    const output = document.getElementById("output");
+    output.textContent = "";
+
+    lines.forEach(function(line, i)
+    {
+        setTimeout(function()
+        {
+            output.textContent += line + "\n";
+        }, i * 500);
+    });
+
+    setTimeout(function()
+    {
+        output.textContent += "\n[process completed - exit code 0]";
+    }, lines.length * 500 + 200);
+}
+
+
+function clearOutput()
+{
+    document.getElementById("output").textContent = "";
+}
+
+
+document.getElementById("code")
+    .addEventListener("keydown", function(event)
+    {
+        if (event.ctrlKey && event.key === "Enter")
+        {
+            runCode();
+        }
+    });
+
+
+loadDemo(0);
+
+</script>
+
+</body>
+</html>
