@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-600-normal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.css">
+   
 </head>
 <body>
 
@@ -22,6 +23,7 @@
             <li><a href="#about">About</a></li>
             <li><a href="#skills">Skills</a></li>
             <li><a href="#projects">Projects</a></li>
+            <li><a href="#feedback">Feedback</a></li>
             <li><a href="#contact">Contact</a></li>
         </ul>
         <div class="hamburger" id="hamburger">
@@ -94,7 +96,7 @@
                     </div>
                     <div class="about-info-item">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span><strong>Location:</strong>Bulihan, Nasugbu, Batangas, Philippines</span>
+                        <span><strong>Location:</strong> Nasugbu, Batangas, Philippines</span>
                     </div>
                 </div>
                 <a href="#contact" class="btn btn-primary"><i class="fas fa-download"></i> Download CV</a>
@@ -162,6 +164,66 @@
         </div>
     </section>
 
+    <!-- ========== NEW FEEDBACK SECTION ========== -->
+    <section id="feedback">
+        <div class="section-header reveal">
+            <h2>Leave a <span class="gradient">Feedback</span></h2>
+            <p>Your thoughts help me grow — share your experience or suggestions below!</p>
+        </div>
+        <div class="feedback-wrapper">
+            <div class="feedback-form-card reveal">
+                <h3>Share Your Thoughts</h3>
+                <p>Rate my portfolio and let me know what you think.</p>
+                <form id="feedbackForm">
+                    <div class="form-group">
+                        <label for="fbName">Your Name</label>
+                        <input type="text" id="fbName" name="fbName" placeholder="Juan Dela Cruz" required maxlength="50">
+                    </div>
+                    <div class="rating-group">
+                        <label>Your Rating</label>
+                        <div class="star-rating">
+                            <input type="radio" id="star5" name="rating" value="5" required>
+                            <label for="star5" title="5 stars"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star4" name="rating" value="4">
+                            <label for="star4" title="4 stars"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star3" name="rating" value="3">
+                            <label for="star3" title="3 stars"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star2" name="rating" value="2">
+                            <label for="star2" title="2 stars"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star1" name="rating" value="1">
+                            <label for="star1" title="1 star"><i class="fas fa-star"></i></label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="fbMessage">Your Feedback</label>
+                        <textarea id="fbMessage" name="fbMessage" placeholder="Write your feedback here..." required maxlength="500"></textarea>
+                    </div>
+                    <button type="submit" class="btn-primary" id="fbSubmitBtn">
+                        <i class="fas fa-paper-plane"></i> Submit Feedback
+                    </button>
+                </form>
+            </div>
+
+            <div class="feedback-list-card reveal">
+                <div class="feedback-list-header">
+                    <h3>Recent Feedback</h3>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <span class="feedback-count" id="feedbackCount">0 feedbacks</span>
+                        <button class="clear-feedback-btn" id="clearFeedbackBtn" title="Clear all feedbacks" style="display:none;">
+                            <i class="fas fa-trash"></i> Clear
+                        </button>
+                    </div>
+                </div>
+                <div class="feedback-list" id="feedbackList">
+                    <div class="feedback-empty">
+                        <i class="far fa-comment-dots"></i>
+                        <p>No feedbacks yet. Be the first to share your thoughts!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="contact">
         <div class="section-header reveal">
             <h2>Get In <span class="gradient">Touch</span></h2>
@@ -190,7 +252,7 @@
                         <div class="icon-box"><i class="fas fa-map-marker-alt"></i></div>
                         <div class="info">
                             <span>Location</span>
-                            <strong>Bulihan Nasugbu Batangas Philippines</strong>
+                            <strong>Nasugbu Batangas Philippines</strong>
                         </div>
                     </div>
                 </div>
@@ -225,7 +287,200 @@
         <p>© 2026 <span class="gradient">Matt Cyrus Jared Mendoza</span>. All rights reserved. Built with love and lots of patience.</p>
     </footer>
 
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <div class="toast-icon"><i class="fas fa-check"></i></div>
+        <div class="toast-content">
+            <strong id="toastTitle">Success!</strong>
+            <span id="toastMessage">Your feedback has been submitted.</span>
+        </div>
+    </div>
+
     <script src="mp.js"></script>
+    <script>
+        // ========== FUNCTIONAL FEEDBACK SYSTEM ==========
+        (function() {
+            const FEEDBACK_STORAGE_KEY = 'mcjm_portfolio_feedbacks';
+            const feedbackForm = document.getElementById('feedbackForm');
+            const feedbackList = document.getElementById('feedbackList');
+            const feedbackCount = document.getElementById('feedbackCount');
+            const clearFeedbackBtn = document.getElementById('clearFeedbackBtn');
+            const fbSubmitBtn = document.getElementById('fbSubmitBtn');
+            const toast = document.getElementById('toast');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+
+            // Load feedbacks from localStorage
+            function loadFeedbacks() {
+                try {
+                    const data = localStorage.getItem(FEEDBACK_STORAGE_KEY);
+                    return data ? JSON.parse(data) : [];
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            // Save feedbacks to localStorage
+            function saveFeedbacks(feedbacks) {
+                try {
+                    localStorage.setItem(FEEDBACK_STORAGE_KEY, JSON.stringify(feedbacks));
+                } catch (e) {
+                    console.warn('Could not save feedbacks:', e);
+                }
+            }
+
+            // Format time ago
+            function timeAgo(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const seconds = Math.floor((now - date) / 1000);
+
+                if (seconds < 60) return 'just now';
+                const minutes = Math.floor(seconds / 60);
+                if (minutes < 60) return minutes + (minutes === 1 ? ' minute ago' : ' minutes ago');
+                const hours = Math.floor(minutes / 60);
+                if (hours < 24) return hours + (hours === 1 ? ' hour ago' : ' hours ago');
+                const days = Math.floor(hours / 24);
+                if (days < 7) return days + (days === 1 ? ' day ago' : ' days ago');
+                return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            }
+
+            // Get initials from name
+            function getInitials(name) {
+                return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase();
+            }
+
+            // Escape HTML to prevent XSS
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            // Render feedback list
+            function renderFeedbacks() {
+                const feedbacks = loadFeedbacks();
+
+                // Update count
+                feedbackCount.textContent = feedbacks.length + (feedbacks.length === 1 ? ' feedback' : ' feedbacks');
+                clearFeedbackBtn.style.display = feedbacks.length > 0 ? 'inline-block' : 'none';
+
+                if (feedbacks.length === 0) {
+                    feedbackList.innerHTML = `
+                        <div class="feedback-empty">
+                            <i class="far fa-comment-dots"></i>
+                            <p>No feedbacks yet. Be the first to share your thoughts!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                feedbackList.innerHTML = feedbacks.map(fb => `
+                    <div class="feedback-item">
+                        <div class="feedback-item-header">
+                            <div class="feedback-author">
+                                <div class="feedback-avatar">${escapeHtml(getInitials(fb.name))}</div>
+                                <div class="feedback-author-info">
+                                    <strong>${escapeHtml(fb.name)}</strong>
+                                    <span>${timeAgo(fb.date)}</span>
+                                </div>
+                            </div>
+                            <div class="feedback-stars">
+                                ${'<i class="fas fa-star"></i>'.repeat(fb.rating)}${'<i class="far fa-star" style="color:#374151;"></i>'.repeat(5 - fb.rating)}
+                            </div>
+                        </div>
+                        <p class="feedback-message">${escapeHtml(fb.message)}</p>
+                    </div>
+                `).join('');
+            }
+
+            // Show toast notification
+            let toastTimer;
+            function showToast(title, message, isError = false) {
+                toastTitle.textContent = title;
+                toastMessage.textContent = message;
+                toast.classList.toggle('error', isError);
+                const icon = toast.querySelector('.toast-icon i');
+                icon.className = isError ? 'fas fa-exclamation-triangle' : 'fas fa-check';
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
+            }
+
+            // Handle feedback submission
+            feedbackForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const name = document.getElementById('fbName').value.trim();
+                const message = document.getElementById('fbMessage').value.trim();
+                const ratingInput = document.querySelector('input[name="rating"]:checked');
+
+                // Validation
+                if (!name) {
+                    showToast('Missing Name', 'Please enter your name.', true);
+                    return;
+                }
+                if (!ratingInput) {
+                    showToast('Missing Rating', 'Please select a star rating.', true);
+                    return;
+                }
+                if (!message || message.length < 3) {
+                    showToast('Too Short', 'Feedback message is too short.', true);
+                    return;
+                }
+
+                const rating = parseInt(ratingInput.value);
+
+                // Disable button while "submitting"
+                fbSubmitBtn.disabled = true;
+                fbSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+                // Simulate network delay for realistic feedback
+                setTimeout(() => {
+                    const newFeedback = {
+                        id: Date.now(),
+                        name: name,
+                        rating: rating,
+                        message: message,
+                        date: new Date().toISOString()
+                    };
+
+                    const feedbacks = loadFeedbacks();
+                    feedbacks.unshift(newFeedback); // newest first
+                    saveFeedbacks(feedbacks);
+
+                    renderFeedbacks();
+
+                    // Reset form
+                    feedbackForm.reset();
+
+                    // Re-enable button
+                    fbSubmitBtn.disabled = false;
+                    fbSubmitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+
+                    showToast('Thank You! 🎉', 'Your feedback has been submitted successfully.');
+
+                    // Scroll to feedback list on mobile
+                    if (window.innerWidth <= 900) {
+                        setTimeout(() => {
+                            document.querySelector('.feedback-list-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }, 400);
+                    }
+                }, 700);
+            });
+
+            // Clear all feedbacks
+            clearFeedbackBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to delete all feedbacks? This cannot be undone.')) {
+                    localStorage.removeItem(FEEDBACK_STORAGE_KEY);
+                    renderFeedbacks();
+                    showToast('Cleared', 'All feedbacks have been removed.');
+                }
+            });
+
+            // Initial render
+            renderFeedbacks();
+        })();
+    </script>
 </body>
 </html>
-cdnjs.cloudflare.com
