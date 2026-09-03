@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,7 +10,35 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-600-normal.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.css">
-    
+
+    <!--
+    ============================================================
+    🔥 FIREBASE SETUP — SO EVERYONE CAN SEE EACH OTHER'S FEEDBACK
+    ============================================================
+    The previous version used localStorage, which is PER DEVICE.
+    To share feedbacks across all visitors, we use Firebase (free).
+
+    STEPS (takes ~5 minutes):
+    1. Go to https://console.firebase.google.com/
+    2. Click "Add project" → name it (e.g. "matt-portfolio") → Create
+    3. In the project overview, click the Web icon (</>) to add a web app
+    4. Name it "portfolio" → Register app → Copy the firebaseConfig object
+    5. On the left menu, go to "Build" → "Realtime Database" → Create Database
+       → Choose "Start in test mode" → Pick location → Enable
+    6. Paste your config into the FIREBASE_CONFIG object below (replace the placeholders)
+    7. Save and refresh — DONE! Everyone now sees everyone's feedback in real-time.
+
+    Note: Test mode expires after 30 days. After that, update the rules to:
+    {
+      "rules": {
+        "feedbacks": {
+          ".read": true,
+          ".write": true
+        }
+      }
+    }
+    ============================================================
+    -->
 </head>
 <body>
 
@@ -26,6 +53,23 @@
         <div class="bg-shooting-star"></div>
         <div class="bg-shooting-star"></div>
         <canvas id="bgCanvas"></canvas>
+    </div>
+
+    <!-- Firebase Setup Banner (hidden once configured) -->
+    <div id="fbSetupBanner" style="display:none; position:fixed; top:80px; left:50%; transform:translateX(-50%); z-index:9999; background:linear-gradient(135deg,#1e3a8a,#1e40af); color:#fff; padding:18px 24px; border-radius:14px; box-shadow:0 10px 40px rgba(0,0,0,0.5); max-width:90%; width:520px; font-family:'Inter',sans-serif; border:1px solid rgba(96,165,250,0.3);">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+            <div>
+                <strong style="font-size:1rem; display:block; margin-bottom:6px;"><i class="fas fa-fire" style="color:#fbbf24;"></i> Firebase Setup Required</strong>
+                <p style="font-size:0.85rem; line-height:1.5; margin:0; opacity:0.95;">
+                    To let <b>all visitors</b> see each other's feedback, connect Firebase:<br>
+                    1. Go to <a href="https://console.firebase.google.com/" target="_blank" style="color:#93c5fd;">console.firebase.google.com</a><br>
+                    2. Create project → Add Web App → Copy config<br>
+                    3. Enable <b>Realtime Database</b> (test mode)<br>
+                    4. Paste config into <code style="background:rgba(0,0,0,0.3); padding:2px 6px; border-radius:4px;">FIREBASE_CONFIG</code> in this HTML file
+                </p>
+            </div>
+            <button onclick="document.getElementById('fbSetupBanner').style.display='none'" style="background:rgba(255,255,255,0.1); border:none; color:#fff; width:28px; height:28px; border-radius:50%; cursor:pointer; flex-shrink:0;">✕</button>
+        </div>
     </div>
 
     <nav id="navbar">
@@ -49,9 +93,7 @@
     <section class="hero" id="home">
         <div class="hero-content">
             <div class="hero-text">
-                <p class="greeting">
-                    <i class="fas fa-hand-sparkles"></i> Hello, I'm
-                </p>
+                <p class="greeting"><i class="fas fa-hand-sparkles"></i> Hello, I'm</p>
                 <h1>Matt Cyrus Jared<br><span class="gradient">Mendoza</span></h1>
                 <p class="subtitle">BS Computer Science Student</p>
                 <p class="description">Passionate about building innovative solutions through code. I love turning complex problems into simple, beautiful, and intuitive digital experiences.</p>
@@ -61,33 +103,19 @@
                 </div>
             </div>
             <div class="hero-image">
-                <div class="image-wrapper">
-                    <img src="matt.jpg" alt="Matt Cyrus Jared Mendoza">
-                </div>
-                <div class="floating-badge badge-1">
-                    <i class="fas fa-code" style="color: var(--primary);"></i>
-                    <span>Developer</span>
-                </div>
-                <div class="floating-badge badge-2">
-                    <i class="fas fa-graduation-cap" style="color: var(--secondary);"></i>
-                    <span>CS Student</span>
-                </div>
+                <div class="image-wrapper"><img src="matt.jpg" alt="Matt Cyrus Jared Mendoza"></div>
+                <div class="floating-badge badge-1"><i class="fas fa-code" style="color: var(--primary);"></i><span>Developer</span></div>
+                <div class="floating-badge badge-2"><i class="fas fa-graduation-cap" style="color: var(--secondary);"></i><span>CS Student</span></div>
             </div>
         </div>
     </section>
 
     <section id="about">
-        <div class="section-header reveal">
-            <h2>About <span class="gradient">Me</span></h2>
-            <p>Get to know me better and what drives my passion for technology</p>
-        </div>
+        <div class="section-header reveal"><h2>About <span class="gradient">Me</span></h2><p>Get to know me better and what drives my passion for technology</p></div>
         <div class="about-grid">
             <div class="about-image-container reveal">
                 <img src="matt.jpg" alt="About Matt Cyrus Jared Mendoza" class="about-img">
-                <div class="experience-badge">
-                    <span class="number">CS</span>
-                    <span class="label">Student</span>
-                </div>
+                <div class="experience-badge"><span class="number">CS</span><span class="label">Student</span></div>
             </div>
             <div class="about-content reveal">
                 <h3>A Passionate CS Student & Developer</h3>
@@ -95,22 +123,10 @@
                 <p>Throughout my academic journey, I've developed a strong foundation in programming, data structures, algorithms, and software engineering principles. I enjoy exploring new technologies and continuously expanding my skill set to stay current with industry trends.</p>
                 <p>When I'm not coding, you can find me exploring new tech communities, contributing to open-source projects, or brainstorming ideas for my next big project. I believe in the power of technology to transform ideas into reality.</p>
                 <div class="about-info">
-                    <div class="about-info-item">
-                        <i class="fas fa-user"></i>
-                        <span><strong>Name:</strong> Matt Cyrus Jared Mendoza</span>
-                    </div>
-                    <div class="about-info-item">
-                        <i class="fas fa-graduation-cap"></i>
-                        <span><strong>Course:</strong> BS Computer Science</span>
-                    </div>
-                    <div class="about-info-item">
-                        <i class="fas fa-envelope"></i>
-                        <span><strong>Email:</strong> mendozamattcyrus@email.com</span>
-                    </div>
-                    <div class="about-info-item">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span><strong>Location:</strong> Nasugbu, Batangas, Philippines</span>
-                    </div>
+                    <div class="about-info-item"><i class="fas fa-user"></i><span><strong>Name:</strong> Matt Cyrus Jared Mendoza</span></div>
+                    <div class="about-info-item"><i class="fas fa-graduation-cap"></i><span><strong>Course:</strong> BS Computer Science</span></div>
+                    <div class="about-info-item"><i class="fas fa-envelope"></i><span><strong>Email:</strong> mendozamattcyrus@email.com</span></div>
+                    <div class="about-info-item"><i class="fas fa-map-marker-alt"></i><span><strong>Location:</strong> Nasugbu, Batangas, Philippines</span></div>
                 </div>
                 <a href="#contact" class="btn btn-primary"><i class="fas fa-download"></i> Download CV</a>
             </div>
@@ -118,59 +134,24 @@
     </section>
 
     <section id="skills">
-        <div class="section-header reveal">
-            <h2>My <span class="gradient">Skills</span></h2>
-            <p>Technologies and tools I work with to bring ideas to life</p>
-        </div>
+        <div class="section-header reveal"><h2>My <span class="gradient">Skills</span></h2><p>Technologies and tools I work with to bring ideas to life</p></div>
         <div class="skills-grid">
-            <div class="skill-card reveal">
-                <div class="icon"><i class="fas fa-code"></i></div>
-                <h3>Frontend Development</h3>
-                <p>Building responsive and interactive user interfaces with modern technologies.</p>
-                <div class="skill-tags">
-                    <span>HTML5</span><span>CSS3</span><span>JavaScript</span><span>React</span>
-                </div>
-            </div>
-            <div class="skill-card reveal">
-                <div class="icon"><i class="fas fa-server"></i></div>
-                <h3>Backend Development</h3>
-                <p>Creating robust server-side applications and RESTful APIs.</p>
-                <div class="skill-tags"><span>Node.js</span></div>
-            </div>
-            <div class="skill-card reveal">
-                <div class="icon"><i class="fas fa-database"></i></div>
-                <h3>Database Management</h3>
-                <p>Designing and managing efficient database systems.</p>
-                <div class="skill-tags"><span>MySQL</span></div>
-            </div>
-            <div class="skill-card reveal">
-                <div class="icon"><i class="fas fa-tools"></i></div>
-                <h3>Tools & Others</h3>
-                <p>Development tools and methodologies I use for everyday programming.</p>
-                <div class="skill-tags"><span>VS Code</span></div>
-            </div>
+            <div class="skill-card reveal"><div class="icon"><i class="fas fa-code"></i></div><h3>Frontend Development</h3><p>Building responsive and interactive user interfaces with modern technologies.</p><div class="skill-tags"><span>HTML5</span><span>CSS3</span><span>JavaScript</span><span>React</span></div></div>
+            <div class="skill-card reveal"><div class="icon"><i class="fas fa-server"></i></div><h3>Backend Development</h3><p>Creating robust server-side applications and RESTful APIs.</p><div class="skill-tags"><span>Node.js</span></div></div>
+            <div class="skill-card reveal"><div class="icon"><i class="fas fa-database"></i></div><h3>Database Management</h3><p>Designing and managing efficient database systems.</p><div class="skill-tags"><span>MySQL</span></div></div>
+            <div class="skill-card reveal"><div class="icon"><i class="fas fa-tools"></i></div><h3>Tools & Others</h3><p>Development tools and methodologies I use for everyday programming.</p><div class="skill-tags"><span>VS Code</span></div></div>
         </div>
     </section>
 
     <section id="projects" class="projects-section">
-        <div class="section-header reveal">
-            <h2>Completed <span class="gradient">Projects</span></h2>
-            <p>Forged through dedication and discipline</p>
-        </div>
+        <div class="section-header reveal"><h2>Completed <span class="gradient">Projects</span></h2><p>Forged through dedication and discipline</p></div>
         <div class="projects-grid">
             <div class="project-card reveal">
-                <div class="project-image">
-                    <img src="demo.jpg" alt="C++ Demo Project">
-                </div>
+                <div class="project-image"><img src="demo.jpg" alt="C++ Demo Project"></div>
                 <div class="project-content">
                     <h3 class="project-title">C++ Demo Learning System</h3>
                     <p class="project-desc">An interactive C++ learning system featuring programming examples, simulated console output, user input, and explanations of variables and programming concepts.</p>
-                    <div class="project-tags">
-                        <span class="project-tag">C++</span>
-                        <span class="project-tag">HTML</span>
-                        <span class="project-tag">CSS</span>
-                        <span class="project-tag">JavaScript</span>
-                    </div>
+                    <div class="project-tags"><span class="project-tag">C++</span><span class="project-tag">HTML</span><span class="project-tag">CSS</span><span class="project-tag">JavaScript</span></div>
                     <a href="mydemo.html" class="project-link"><i class="fas fa-arrow-right"></i>View Demo</a>
                 </div>
             </div>
@@ -179,45 +160,26 @@
 
     <!-- ========== FEEDBACK SECTION ========== -->
     <section id="feedback">
-        <div class="section-header reveal">
-            <h2>Leave a <span class="gradient">Feedback</span></h2>
-            <p>Your thoughts help me grow — share your experience or suggestions below!</p>
-        </div>
+        <div class="section-header reveal"><h2>Leave a <span class="gradient">Feedback</span></h2><p>Your thoughts help me grow — share your experience or suggestions below!</p></div>
         <div class="feedback-wrapper">
             <div class="feedback-form-card reveal">
                 <h3>Share Your Thoughts</h3>
                 <p>Rate my portfolio and let me know what you think.</p>
                 <form id="feedbackForm" novalidate>
-                    <div class="form-group">
-                        <label for="fbName"><i class="fas fa-user"></i> Your Name</label>
-                        <input type="text" id="fbName" name="fbName" placeholder="Juan Dela Cruz" required maxlength="50">
-                    </div>
-                    <div class="form-group">
-                        <label for="fbEmail"><i class="fas fa-envelope"></i> Your Email</label>
-                        <input type="email" id="fbEmail" name="fbEmail" placeholder="juan@example.com" required>
-                    </div>
+                    <div class="form-group"><label for="fbName"><i class="fas fa-user"></i> Your Name</label><input type="text" id="fbName" name="fbName" placeholder="Juan Dela Cruz" required maxlength="50"></div>
+                    <div class="form-group"><label for="fbEmail"><i class="fas fa-envelope"></i> Your Email</label><input type="email" id="fbEmail" name="fbEmail" placeholder="juan@example.com" required></div>
                     <div class="rating-group">
                         <label><i class="fas fa-star"></i> Your Rating</label>
                         <div class="star-rating">
-                            <input type="radio" id="star5" name="rating" value="5" required>
-                            <label for="star5" title="5 stars"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star4" name="rating" value="4">
-                            <label for="star4" title="4 stars"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star3" name="rating" value="3">
-                            <label for="star3" title="3 stars"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star2" name="rating" value="2">
-                            <label for="star2" title="2 stars"><i class="fas fa-star"></i></label>
-                            <input type="radio" id="star1" name="rating" value="1">
-                            <label for="star1" title="1 star"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star5" name="rating" value="5" required><label for="star5" title="5 stars"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star4" name="rating" value="4"><label for="star4" title="4 stars"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star3" name="rating" value="3"><label for="star3" title="3 stars"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star2" name="rating" value="2"><label for="star2" title="2 stars"><i class="fas fa-star"></i></label>
+                            <input type="radio" id="star1" name="rating" value="1"><label for="star1" title="1 star"><i class="fas fa-star"></i></label>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="fbMessage"><i class="fas fa-comment"></i> Your Feedback</label>
-                        <textarea id="fbMessage" name="fbMessage" placeholder="Write your feedback here..." required maxlength="500"></textarea>
-                    </div>
-                    <button type="submit" class="btn-primary" id="fbSubmitBtn">
-                        <i class="fas fa-paper-plane"></i> Submit Feedback
-                    </button>
+                    <div class="form-group"><label for="fbMessage"><i class="fas fa-comment"></i> Your Feedback</label><textarea id="fbMessage" name="fbMessage" placeholder="Write your feedback here..." required maxlength="500"></textarea></div>
+                    <button type="submit" class="btn-primary" id="fbSubmitBtn"><i class="fas fa-paper-plane"></i> Submit Feedback</button>
                 </form>
             </div>
 
@@ -226,52 +188,26 @@
                     <h3>Recent Feedback</h3>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <span class="feedback-count" id="feedbackCount">0 feedbacks</span>
-                        <button class="clear-feedback-btn" id="clearFeedbackBtn" title="Clear all feedbacks" style="display:none;">
-                            <i class="fas fa-trash"></i> Clear
-                        </button>
+                        <button class="clear-feedback-btn" id="clearFeedbackBtn" title="Clear all feedbacks" style="display:none;"><i class="fas fa-trash"></i> Clear</button>
                     </div>
                 </div>
                 <div class="feedback-list" id="feedbackList">
-                    <div class="feedback-empty">
-                        <i class="far fa-comment-dots"></i>
-                        <p>No feedbacks yet. Be the first to share your thoughts!</p>
-                    </div>
+                    <div class="feedback-empty"><i class="fas fa-spinner fa-spin"></i><p>Loading feedbacks...</p></div>
                 </div>
             </div>
         </div>
     </section>
 
     <section id="contact">
-        <div class="section-header reveal">
-            <h2>Get In <span class="gradient">Touch</span></h2>
-            <p>Have a question or want to work together? Feel free to reach out!</p>
-        </div>
+        <div class="section-header reveal"><h2>Get In <span class="gradient">Touch</span></h2><p>Have a question or want to work together? Feel free to reach out!</p></div>
         <div class="contact-container">
             <div class="contact-info reveal">
                 <h3>Let's Talk</h3>
                 <p>I'm always open to discussing new projects, creative ideas, or opportunities to be part of your vision. Drop me a line and I'll get back to you as soon as possible!</p>
                 <div class="contact-details">
-                    <div class="contact-item">
-                        <div class="icon-box"><i class="fas fa-envelope"></i></div>
-                        <div class="info">
-                            <span>Email</span>
-                            <strong>mendozamattcyrus@gmail.com</strong>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="icon-box"><i class="fas fa-phone"></i></div>
-                        <div class="info">
-                            <span>Phone</span>
-                            <a href="tel:+63 9468150372">+63 9468150372</a>
-                        </div>
-                    </div>
-                    <div class="contact-item">
-                        <div class="icon-box"><i class="fas fa-map-marker-alt"></i></div>
-                        <div class="info">
-                            <span>Location</span>
-                            <strong>Nasugbu Batangas Philippines</strong>
-                        </div>
-                    </div>
+                    <div class="contact-item"><div class="icon-box"><i class="fas fa-envelope"></i></div><div class="info"><span>Email</span><strong>mendozamattcyrus@gmail.com</strong></div></div>
+                    <div class="contact-item"><div class="icon-box"><i class="fas fa-phone"></i></div><div class="info"><span>Phone</span><a href="tel:+63 9468150372">+63 9468150372</a></div></div>
+                    <div class="contact-item"><div class="icon-box"><i class="fas fa-map-marker-alt"></i></div><div class="info"><span>Location</span><strong>Nasugbu Batangas Philippines</strong></div></div>
                 </div>
                 <div class="social-links">
                     <a href="https://www.facebook.com/share/19U5qeDpb5/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
@@ -279,57 +215,32 @@
                 </div>
             </div>
             <form class="contact-form reveal" id="contactForm">
-                <div class="form-group">
-                    <label for="name">Your Name</label>
-                    <input type="text" id="name" name="name" placeholder="mj" required>
-                </div>
-                <div class="form-group">
-                    <label for="email">Your Email</label>
-                    <input type="email" id="email" name="email" placeholder="mj@example.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="subject">Subject</label>
-                    <input type="text" id="subject" name="subject" placeholder="Project Collaboration" required>
-                </div>
-                <div class="form-group">
-                    <label for="message">Message</label>
-                    <textarea id="message" name="message" placeholder="Tell me about your project..." required></textarea>
-                </div>
+                <div class="form-group"><label for="name">Your Name</label><input type="text" id="name" name="name" placeholder="mj" required></div>
+                <div class="form-group"><label for="email">Your Email</label><input type="email" id="email" name="email" placeholder="mj@example.com" required></div>
+                <div class="form-group"><label for="subject">Subject</label><input type="text" id="subject" name="subject" placeholder="Project Collaboration" required></div>
+                <div class="form-group"><label for="message">Message</label><textarea id="message" name="message" placeholder="Tell me about your project..." required></textarea></div>
                 <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i>Send Message</button>
             </form>
         </div>
     </section>
 
-    <footer>
-        <p>© 2026 <span class="gradient">Matt Cyrus Jared Mendoza</span>. All rights reserved. Built with love and lots of patience.</p>
-    </footer>
+    <footer><p>© 2026 <span class="gradient">Matt Cyrus Jared Mendoza</span>. All rights reserved. Built with love and lots of patience.</p></footer>
 
-    <!-- Toast Notification -->
-    <div class="toast" id="toast">
-        <div class="toast-icon"><i class="fas fa-check"></i></div>
-        <div class="toast-content">
-            <strong id="toastTitle">Success!</strong>
-            <span id="toastMessage">Your feedback has been submitted.</span>
-        </div>
-    </div>
-
-    <!-- Detail Modal -->
-    <div class="fb-modal-overlay" id="fbModal">
-        <div class="fb-modal">
-            <button class="fb-modal-close" id="fbModalClose"><i class="fas fa-times"></i></button>
-            <div id="fbModalContent"></div>
-        </div>
-    </div>
+    <div class="toast" id="toast"><div class="toast-icon"><i class="fas fa-check"></i></div><div class="toast-content"><strong id="toastTitle">Success!</strong><span id="toastMessage">Your feedback has been submitted.</span></div></div>
+    <div class="fb-modal-overlay" id="fbModal"><div class="fb-modal"><button class="fb-modal-close" id="fbModalClose"><i class="fas fa-times"></i></button><div id="fbModalContent"></div></div></div>
 
     <script src="mp.js"></script>
 
-    <!-- ========== ANIMATED PARTICLE NETWORK BACKGROUND ========== -->
+    <!-- ========== FIREBASE SDK (compat version - works in plain HTML) ========== -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+
+    <!-- ========== ANIMATED PARTICLE BACKGROUND ========== -->
     <script>
         (function() {
             const canvas = document.getElementById('bgCanvas');
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
-
             let particles = [];
             let mouse = { x: null, y: null, radius: 150 };
             let animationId;
@@ -340,29 +251,22 @@
                 height = canvas.height = window.innerHeight;
                 initParticles();
             }
-
             function initParticles() {
                 particles = [];
-                // Density based on screen size
                 const density = Math.min((width * height) / 12000, 120);
                 const count = Math.max(40, Math.floor(density));
                 for (let i = 0; i < count; i++) {
                     particles.push({
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        vx: (Math.random() - 0.5) * 0.4,
-                        vy: (Math.random() - 0.5) * 0.4,
+                        x: Math.random() * width, y: Math.random() * height,
+                        vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
                         size: Math.random() * 1.8 + 0.6,
                         baseAlpha: Math.random() * 0.5 + 0.3,
-                        hue: Math.random() > 0.7 ? 190 : 215 // mix of cyan and blue
+                        hue: Math.random() > 0.7 ? 190 : 215
                     });
                 }
             }
-
             function drawParticles() {
                 ctx.clearRect(0, 0, width, height);
-
-                // Draw connections first
                 for (let i = 0; i < particles.length; i++) {
                     for (let j = i + 1; j < particles.length; j++) {
                         const dx = particles[i].x - particles[j].x;
@@ -379,13 +283,9 @@
                         }
                     }
                 }
-
-                // Draw particles
                 particles.forEach(p => {
-                    // Mouse interaction
                     if (mouse.x !== null) {
-                        const dx = p.x - mouse.x;
-                        const dy = p.y - mouse.y;
+                        const dx = p.x - mouse.x; const dy = p.y - mouse.y;
                         const dist = Math.sqrt(dx * dx + dy * dy);
                         if (dist < mouse.radius) {
                             const force = (mouse.radius - dist) / mouse.radius;
@@ -393,76 +293,45 @@
                             p.y += (dy / dist) * force * 1.5;
                         }
                     }
-
-                    // Update position
-                    p.x += p.vx;
-                    p.y += p.vy;
-
-                    // Wrap around edges
-                    if (p.x < 0) p.x = width;
-                    if (p.x > width) p.x = 0;
-                    if (p.y < 0) p.y = height;
-                    if (p.y > height) p.y = 0;
-
-                    // Draw glow
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0) p.x = width; if (p.x > width) p.x = 0;
+                    if (p.y < 0) p.y = height; if (p.y > height) p.y = 0;
                     const gradient = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size * 4);
                     gradient.addColorStop(0, `hsla(${p.hue}, 90%, 65%, ${p.baseAlpha})`);
                     gradient.addColorStop(1, `hsla(${p.hue}, 90%, 65%, 0)`);
                     ctx.fillStyle = gradient;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2);
-                    ctx.fill();
-
-                    // Draw core
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 4, 0, Math.PI * 2); ctx.fill();
                     ctx.fillStyle = `hsla(${p.hue}, 100%, 80%, ${p.baseAlpha + 0.2})`;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
                 });
-
                 animationId = requestAnimationFrame(drawParticles);
             }
-
-            // Mouse tracking
-            window.addEventListener('mousemove', (e) => {
-                mouse.x = e.clientX;
-                mouse.y = e.clientY;
-            });
-
-            window.addEventListener('mouseout', () => {
-                mouse.x = null;
-                mouse.y = null;
-            });
-
-            window.addEventListener('resize', () => {
-                cancelAnimationFrame(animationId);
-                resize();
-                drawParticles();
-            });
-
-            // Respect reduced motion preference
+            window.addEventListener('mousemove', (e) => { mouse.x = e.clientX; mouse.y = e.clientY; });
+            window.addEventListener('mouseout', () => { mouse.x = null; mouse.y = null; });
+            window.addEventListener('resize', () => { cancelAnimationFrame(animationId); resize(); drawParticles(); });
             const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-            if (!prefersReducedMotion) {
-                resize();
-                drawParticles();
-            } else {
-                resize();
-                // Draw once statically
-                ctx.clearRect(0, 0, width, height);
-                particles.forEach(p => {
-                    ctx.fillStyle = `hsla(${p.hue}, 100%, 80%, ${p.baseAlpha})`;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                    ctx.fill();
-                });
-            }
+            if (!prefersReducedMotion) { resize(); drawParticles(); }
+            else { resize(); ctx.clearRect(0, 0, width, height); particles.forEach(p => { ctx.fillStyle = `hsla(${p.hue}, 100%, 80%, ${p.baseAlpha})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill(); }); }
         })();
     </script>
 
+    <!-- ========== FEEDBACK SYSTEM WITH FIREBASE (SHARED ACROSS ALL VISITORS) ========== -->
     <script>
-        // ========== FUNCTIONAL FEEDBACK SYSTEM ==========
+        // ============================================================
+        // 🔥 PASTE YOUR FIREBASE CONFIG HERE (replace the placeholders)
+        // Get it from: Firebase Console → Project Settings → Your apps → Web app
+        // ============================================================
+        const FIREBASE_CONFIG = {
+            apiKey: "PASTE_YOUR_API_KEY_HERE",
+            authDomain: "PASTE_YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://PASTE_YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "PASTE_YOUR_PROJECT_ID",
+            storageBucket: "PASTE_YOUR_PROJECT.appspot.com",
+            messagingSenderId: "PASTE_YOUR_SENDER_ID",
+            appId: "PASTE_YOUR_APP_ID"
+        };
+
         (function() {
-            const STORAGE_KEY = 'mcjm_portfolio_feedbacks';
             const feedbackForm = document.getElementById('feedbackForm');
             const feedbackList = document.getElementById('feedbackList');
             const feedbackCount = document.getElementById('feedbackCount');
@@ -474,19 +343,67 @@
             const fbModal = document.getElementById('fbModal');
             const fbModalContent = document.getElementById('fbModalContent');
             const fbModalClose = document.getElementById('fbModalClose');
+            const setupBanner = document.getElementById('fbSetupBanner');
 
-            function loadFeedbacks() {
+            let db = null;
+            let feedbacksRef = null;
+            let isFirebaseConfigured = false;
+
+            // Check if Firebase is configured
+            function checkFirebaseConfig() {
+                const placeholder = "PASTE_YOUR_API_KEY_HERE";
+                if (FIREBASE_CONFIG.apiKey === placeholder || FIREBASE_CONFIG.apiKey.includes("PASTE_")) {
+                    isFirebaseConfigured = false;
+                    setupBanner.style.display = 'block';
+                    showLocalFallback();
+                    return false;
+                }
+                isFirebaseConfigured = true;
+                setupBanner.style.display = 'none';
+                return true;
+            }
+
+            // Initialize Firebase
+            function initFirebase() {
                 try {
-                    const data = localStorage.getItem(STORAGE_KEY);
-                    return data ? JSON.parse(data) : [];
-                } catch (e) { return []; }
+                    if (!firebase.apps.length) {
+                        firebase.initializeApp(FIREBASE_CONFIG);
+                    }
+                    db = firebase.database();
+                    feedbacksRef = db.ref('feedbacks');
+
+                    // Listen for real-time updates — everyone sees new feedbacks instantly
+                    feedbacksRef.on('value', (snapshot) => {
+                        const data = snapshot.val() || {};
+                        const feedbacksArray = Object.keys(data).map(key => ({
+                            id: key,
+                            ...data[key]
+                        }));
+                        // Sort newest first
+                        feedbacksArray.sort((a, b) => new Date(b.date) - new Date(a.date));
+                        renderFeedbacks(feedbacksArray);
+                    }, (error) => {
+                        console.error('Firebase read error:', error);
+                        showToast('Connection Error', 'Could not load feedbacks. Check Firebase rules.', true);
+                    });
+                } catch (err) {
+                    console.error('Firebase init error:', err);
+                    showToast('Setup Error', 'Firebase configuration failed. See setup instructions.', true);
+                }
             }
 
-            function saveFeedbacks(list) {
-                try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); }
-                catch (e) { console.warn('Storage error:', e); }
+            // Local fallback if Firebase not configured
+            function showLocalFallback() {
+                feedbackList.innerHTML = `
+                    <div class="feedback-empty">
+                        <i class="fas fa-fire" style="color:#f59e0b;"></i>
+                        <p style="color:#fbbf24; font-weight:600; margin-bottom:8px;">Firebase Not Connected</p>
+                        <p style="font-size:0.85rem;">Feedbacks are currently saved <b>per device</b> only.<br>See the blue banner above to connect Firebase so <b>everyone</b> can see each other's feedback in real-time!</p>
+                    </div>`;
+                feedbackCount.textContent = '0 feedbacks';
             }
 
+            // ---------- Helpers ----------
             function timeAgo(dateString) {
                 const seconds = Math.floor((new Date() - new Date(dateString)) / 1000);
                 if (seconds < 60) return 'just now';
@@ -498,23 +415,20 @@
                 if (d < 7) return d + (d === 1 ? ' day ago' : ' days ago');
                 return new Date(dateString).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
             }
-
             function getInitials(name) {
                 return name.trim().split(/\s+/).map(w => w[0]).slice(0, 2).join('').toUpperCase() || '?';
             }
-
             function escapeHtml(str) {
                 const div = document.createElement('div');
                 div.textContent = str;
                 return div.innerHTML;
             }
-
             function isValidEmail(email) {
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
             }
 
-            function renderFeedbacks() {
-                const feedbacks = loadFeedbacks();
+            // ---------- Render ----------
+            function renderFeedbacks(feedbacks) {
                 feedbackCount.textContent = feedbacks.length + (feedbacks.length === 1 ? ' feedback' : ' feedbacks');
                 clearFeedbackBtn.style.display = feedbacks.length > 0 ? 'inline-block' : 'none';
 
@@ -560,6 +474,7 @@
                 `).join('');
             }
 
+            // ---------- Toast ----------
             let toastTimer;
             function showToast(title, message, isError = false) {
                 toastTitle.textContent = title;
@@ -572,8 +487,10 @@
                 toastTimer = setTimeout(() => toast.classList.remove('show'), 3500);
             }
 
+            // ---------- Modal ----------
+            let currentFeedbacksCache = [];
             function openModal(id) {
-                const fb = loadFeedbacks().find(f => f.id == id);
+                const fb = currentFeedbacksCache.find(f => f.id == id);
                 if (!fb) return;
                 fbModalContent.innerHTML = `
                     <div class="fb-modal-header">
@@ -593,20 +510,18 @@
                 `;
                 fbModal.classList.add('active');
             }
-
             function closeModal() { fbModal.classList.remove('active'); }
-
             fbModalClose.addEventListener('click', closeModal);
             fbModal.addEventListener('click', (e) => { if (e.target === fbModal) closeModal(); });
             document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
 
+            // ---------- List Actions ----------
             feedbackList.addEventListener('click', (e) => {
                 const btn = e.target.closest('.fb-action-btn');
                 if (!btn) return;
                 const id = btn.dataset.id;
                 const action = btn.dataset.action;
-                const feedbacks = loadFeedbacks();
-                const fb = feedbacks.find(f => f.id == id);
+                const fb = currentFeedbacksCache.find(f => f.id == id);
                 if (!fb) return;
 
                 if (action === 'view') {
@@ -617,81 +532,91 @@
                     window.location.href = `mailto:${fb.email}?subject=${subject}&body=${body}`;
                 } else if (action === 'delete') {
                     if (confirm(`Delete feedback from ${fb.name}?`)) {
-                        const updated = feedbacks.filter(f => f.id != id);
-                        saveFeedbacks(updated);
-                        renderFeedbacks();
-                        showToast('Deleted', 'Feedback removed successfully.');
+                        if (isFirebaseConfigured && feedbacksRef) {
+                            feedbacksRef.child(id).remove()
+                                .then(() => showToast('Deleted', 'Feedback removed successfully.'))
+                                .catch(err => showToast('Error', 'Could not delete feedback.', true));
+                        }
                     }
                 }
             });
 
+            // ---------- Submit ----------
             feedbackForm.addEventListener('submit', function(e) {
                 e.preventDefault();
+
+                if (!isFirebaseConfigured) {
+                    showToast('Setup Required', 'Please configure Firebase first (see banner above).', true);
+                    return;
+                }
 
                 const name = document.getElementById('fbName').value.trim();
                 const email = document.getElementById('fbEmail').value.trim();
                 const message = document.getElementById('fbMessage').value.trim();
                 const ratingInput = document.querySelector('input[name="rating"]:checked');
 
-                if (!name || name.length < 2) {
-                    showToast('Invalid Name', 'Please enter your full name.', true);
-                    return;
-                }
-                if (!email || !isValidEmail(email)) {
-                    showToast('Invalid Email', 'Please enter a valid email address.', true);
-                    return;
-                }
-                if (!ratingInput) {
-                    showToast('Missing Rating', 'Please select a star rating.', true);
-                    return;
-                }
-                if (!message || message.length < 3) {
-                    showToast('Too Short', 'Feedback message is too short (min 3 chars).', true);
-                    return;
-                }
+                if (!name || name.length < 2) { showToast('Invalid Name', 'Please enter your full name.', true); return; }
+                if (!email || !isValidEmail(email)) { showToast('Invalid Email', 'Please enter a valid email address.', true); return; }
+                if (!ratingInput) { showToast('Missing Rating', 'Please select a star rating.', true); return; }
+                if (!message || message.length < 3) { showToast('Too Short', 'Feedback message is too short (min 3 chars).', true); return; }
 
                 fbSubmitBtn.disabled = true;
                 fbSubmitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
 
-                setTimeout(() => {
-                    const newFeedback = {
-                        id: Date.now(),
-                        name,
-                        email,
-                        rating: parseInt(ratingInput.value),
-                        message,
-                        date: new Date().toISOString()
-                    };
+                const newFeedback = {
+                    name,
+                    email,
+                    rating: parseInt(ratingInput.value),
+                    message,
+                    date: new Date().toISOString()
+                };
 
-                    const feedbacks = loadFeedbacks();
-                    feedbacks.unshift(newFeedback);
-                    saveFeedbacks(feedbacks);
-
-                    renderFeedbacks();
-                    feedbackForm.reset();
-
-                    fbSubmitBtn.disabled = false;
-                    fbSubmitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
-
-                    showToast('Thank You! 🎉', `Feedback from ${name} submitted successfully.`);
-
-                    if (window.innerWidth <= 900) {
-                        setTimeout(() => {
-                            document.querySelector('.feedback-list-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
-                        }, 400);
-                    }
-                }, 700);
+                // Push to Firebase — all visitors will see it instantly via the listener
+                feedbacksRef.push(newFeedback)
+                    .then(() => {
+                        feedbackForm.reset();
+                        fbSubmitBtn.disabled = false;
+                        fbSubmitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+                        showToast('Thank You! 🎉', 'Your feedback is now visible to everyone!');
+                        if (window.innerWidth <= 900) {
+                            setTimeout(() => {
+                                document.querySelector('.feedback-list-card').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 400);
+                        }
+                    })
+                    .catch((err) => {
+                        console.error('Submit error:', err);
+                        fbSubmitBtn.disabled = false;
+                        fbSubmitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Feedback';
+                        showToast('Error', 'Could not submit feedback. Check your connection.', true);
+                    });
             });
 
+            // ---------- Clear All ----------
             clearFeedbackBtn.addEventListener('click', function() {
+                if (!isFirebaseConfigured) return;
                 if (confirm('Are you sure you want to delete ALL feedbacks? This cannot be undone.')) {
-                    localStorage.removeItem(STORAGE_KEY);
-                    renderFeedbacks();
-                    showToast('Cleared', 'All feedbacks have been removed.');
+                    feedbacksRef.remove()
+                        .then(() => showToast('Cleared', 'All feedbacks have been removed.'))
+                        .catch(err => showToast('Error', 'Could not clear feedbacks.', true));
                 }
             });
 
-            renderFeedbacks();
+            // ---------- Cache updates for modal/view actions ----------
+            if (typeof firebase !== 'undefined') {
+                if (checkFirebaseConfig()) {
+                    initFirebase();
+                    // Keep a cache for modal/view actions
+                    const origRender = renderFeedbacks;
+                    renderFeedbacks = function(arr) {
+                        currentFeedbacksCache = arr;
+                        origRender(arr);
+                    };
+                }
+            } else {
+                setupBanner.style.display = 'block';
+                showLocalFallback();
+            }
         })();
     </script>
 </body>
